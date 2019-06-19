@@ -6,7 +6,6 @@ from flask import Flask, request, redirect, abort
 app = Flask(__name__)
 
 PROJECTS_ROOT = '/var/www'
-FUNNEL_STAGING_BRANCH = 'staging'  # we only need this for funnel right now
 FUNNEL_STAGING_TOUCHFILE = '/tmp/stagingreload'
 WEBHOOK_SECRET = ''  # define webhook secret in local_settings.py
 
@@ -33,27 +32,20 @@ def commit():
     repodir = os.path.join(PROJECTS_ROOT, reponame, reponame)  # will fail for hgtv
 
     if reponame == 'funnel':
-        if payload['ref'] == "refs/heads/{staging_branch}".format(staging_branch=FUNNEL_STAGING_BRANCH):
+        os.chdir(repodir)
+        current_branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], env=os.environ).rstrip('\n')
+        if payload['ref'] == "refs/heads/{staging_branch}".format(staging_branch=current_branch):
             if os.access(repodir, os.W_OK | os.X_OK):
-                os.chdir(repodir)
-                process = subprocess.Popen(['git', 'pull'], env=os.environ,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-                result = []
-                while process.poll is None:
-                    result.extend(process.stdin.readlines())
-                    result.extend(process.stderr.readlines())
+                pull_output = subprocess.check_output(['git', 'pull', 'origin', current_branch], env=os.environ)  # if failed, it'll raise exception
 
-                subprocess.Popen(
-                    ['touch', FUNNEL_STAGING_TOUCHFILE], env=os.environ,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-                os.chdir(savedir) # Is this really required?
-                return '\r\n'.join(result)
+                os.chdir(savedir)  # Is this really required?
+                return pull_output
     else:
         return "Unknown repository, or no access"
 
-application = app # For WSGI
+
+application = app  # For WSGI
+
 
 if __name__ == '__main__':
     app.run('0.0.0.0')
