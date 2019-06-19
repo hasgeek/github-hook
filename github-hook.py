@@ -24,11 +24,12 @@ def index():
 
 @app.route('/', methods=['POST'])
 def commit():
+    request_data = request.get_data()
     payload = request.form.get('payload')
     if not payload:
         return "Missing form variable 'payload'"
 
-    signature = 'sha1=' + hmac.new(WEBHOOK_SECRET, request.body, hashlib.sha1).hexdigest()
+    signature = 'sha1=' + hmac.new(WEBHOOK_SECRET, request_data, hashlib.sha1).hexdigest()
     if 'X-Hub-Signature' not in request.headers or request.headers.get('X-Hub-Signature') != signature:
         return "Signature doesn't match", 401
 
