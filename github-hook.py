@@ -25,16 +25,16 @@ def index():
 @app.route('/', methods=['POST'])
 def commit():
     request_data = request.get_data()
-    payload = request.form.get('payload')
-    if not payload:
-        return "Missing form variable 'payload'"
-
     signature = 'sha1=' + hmac.new(WEBHOOK_SECRET, request_data, hashlib.sha1).hexdigest()
     if 'X-Hub-Signature' not in request.headers or request.headers.get('X-Hub-Signature') != signature:
         return "Signature doesn't match", 401
 
     if not request.headers.get('X-GitHub-Event') == 'push':
         return "Only push events are allowed", 401
+
+    payload = request.form.get('payload')
+    if not payload:
+        return "Missing form variable 'payload'"
 
     payload = json.loads(payload)
     reponame = payload['repository']['name']
