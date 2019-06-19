@@ -39,7 +39,7 @@ def commit():
     payload = json.loads(payload)
     reponame = payload['repository']['name']
     savedir = os.getcwd()
-    repodir = os.path.join(PROJECTS_ROOT, reponame, reponame)  # will fail for hgtv
+    repodir = os.path.join(PROJECTS_ROOT, reponame, 'staging')  # will fail for hgtv
 
     if reponame == 'funnel':
         os.chdir(repodir)
