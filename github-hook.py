@@ -14,7 +14,7 @@ WEBHOOK_SECRET = ''  # define webhook secret in local_settings.py
 try:
     from local_settings import *
 except ImportError as e:
-    print "Local settings not found, no secret will be checked"
+    print "Local settings not found, secret verification will fail"
 
 
 @app.route('/')
@@ -39,7 +39,7 @@ def commit():
     payload = json.loads(payload)
     reponame = payload['repository']['name']
     savedir = os.getcwd()
-    repodir = os.path.join(PROJECTS_ROOT, reponame, 'staging')  # will fail for hgtv
+    repodir = os.path.join(PROJECTS_ROOT, reponame, 'staging')
 
     if reponame == 'funnel':
         os.chdir(repodir)
