@@ -47,7 +47,7 @@ def commit():
         if 'ref' in payload and payload['ref'] == "refs/heads/{staging_branch}".format(staging_branch=current_branch):
             if os.access(repodir, os.W_OK | os.X_OK):
                 pull_output = subprocess.check_output(['git', 'pull', 'origin', current_branch], env=os.environ)  # if failed, it'll raise exception
-
+                subprocess.check_call(['touch', FUNNEL_STAGING_TOUCHFILE])  # touch staging config to restart it
                 os.chdir(savedir)  # Is this really required?
                 return pull_output
     else:
