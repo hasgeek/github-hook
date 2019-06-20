@@ -11,7 +11,7 @@ app = Flask(__name__)
 PROJECTS_ROOT = '/var/www'
 FUNNEL_STAGING_TOUCHFILE = '/tmp/stagingreload'
 WEBHOOK_SECRET = ''  # define webhook secret in local_settings.py
-SLACK_WEBHOOK_URL, data=json.dumps({'text': output}) = ''
+SLACK_WEBHOOK_URL = ''
 
 try:
     from local_settings import *
