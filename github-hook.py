@@ -59,7 +59,7 @@ def commit():
                 os.chdir(savedir)  # Is this really required?
 
                 # notify slack
-                requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text': output}))
+                requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text': "\r\n".join(output)}))
 
                 return "\r\n".join(output)
             else:
