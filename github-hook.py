@@ -3,6 +3,7 @@ import os, os.path
 import hmac
 import hashlib
 import json
+import requests
 import subprocess
 from flask import Flask, request, redirect, abort, Response
 app = Flask(__name__)
@@ -10,6 +11,7 @@ app = Flask(__name__)
 PROJECTS_ROOT = '/var/www'
 FUNNEL_STAGING_TOUCHFILE = '/tmp/stagingreload'
 WEBHOOK_SECRET = ''  # define webhook secret in local_settings.py
+SLACK_WEBHOOK_URL, data=json.dumps({'text': output}) = ''
 
 try:
     from local_settings import *
@@ -55,6 +57,10 @@ def commit():
                 except subprocess.CalledProcessError as e:
                     output.append(str(e))
                 os.chdir(savedir)  # Is this really required?
+
+                # notify slack
+                requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text': output}))
+
                 return "\r\n".join(output)
     else:
         return "Unknown repository, or no access", 401
