@@ -42,14 +42,20 @@ def commit():
     repodir = os.path.join(PROJECTS_ROOT, reponame, 'staging')
 
     if reponame == 'funnel':
+        output = []
         os.chdir(repodir)
         current_branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], env=os.environ).rstrip('\n')
         if 'ref' in payload and payload['ref'] == "refs/heads/{staging_branch}".format(staging_branch=current_branch):
             if os.access(repodir, os.W_OK | os.X_OK):
-                pull_output = subprocess.check_output(['git', 'pull', 'origin', current_branch], env=os.environ)  # if failed, it'll raise exception
-                subprocess.check_call(['touch', FUNNEL_STAGING_TOUCHFILE])  # touch staging config to restart it
+                try:
+                    output.append(subprocess.check_output(['git', 'pull', 'origin', current_branch], env=os.environ))  # if failed, it'll raise exception
+                    output.append(subprocess.check_output(['make'], env=os.environ))
+                    subprocess.check_call(['touch', FUNNEL_STAGING_TOUCHFILE])  # touch staging config to restart it
+                    output.append("Touched {}".format(FUNNEL_STAGING_TOUCHFILE))
+                except subprocess.CalledProcessError as e:
+                    output.append(str(e))
                 os.chdir(savedir)  # Is this really required?
-                return pull_output
+                return "\r\n".join(output)
     else:
         return "Unknown repository, or no access", 401
 
