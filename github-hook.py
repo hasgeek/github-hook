@@ -36,7 +36,7 @@ def commit():
 
     payload = request.form.get('payload')
     if not payload:
-        return "Missing form variable 'payload'"
+        return "Missing form variable 'payload'", 401
 
     payload = json.loads(payload)
     reponame = payload['repository']['name']
@@ -62,6 +62,10 @@ def commit():
                 requests.post(SLACK_WEBHOOK_URL, data=json.dumps({'text': output}))
 
                 return "\r\n".join(output)
+            else:
+                return "Do not have enough permissions", 401
+        else:
+            return "Branch mismatch", 401
     else:
         return "Unknown repository, or no access", 401
 
